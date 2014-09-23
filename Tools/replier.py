@@ -1,0 +1,183 @@
+#Autoreply to tweets with a postcode in
+
+import sys
+import twitter
+import time
+import MySQLdb as mdb
+import random
+
+#build data structure for possible retweets
+class tweet(object):
+    text = None
+    idnum = None
+    user = None
+    reply = None
+
+def validatePostcode(text):
+	return text.replace('@londonpostcode','').replace(' ','').upper()
+
+#add tweets to the database 
+def insertTweet(idnum):
+	try:
+		#connext to the database as pythonuser
+		con = mdb.connect('localhost', 'pythonuser', 'lettersofnote', 'londonData');
+		#create a cursor to move around the db
+		cur = con.cursor()
+		#search for the zoneid
+		cur.execute('INSERT INTO Tweets VALUE (%d)' % idnum)
+		con.commit()
+		print 'Tweet %d inserted.' % idnum
+		
+	except mdb.Error, e:
+		print "Error %d: %s" % (e.args[0],e.args[1])
+	
+	finally:
+		if con:
+			con.close()
+
+#Return zoneid from postcode
+def fetchZoneID(postcode):
+	try:
+		#connext to the database as pythonuser
+		con = mdb.connect('localhost', 'pythonuser', 'lettersofnote', 'londonData');
+		#create a cursor to move around the db
+		cur = con.cursor()
+		#search for the zoneid
+		cur.execute('SELECT ZONEID FROM PC2ZONEID WHERE Postcode = "%s"' % postcode)
+		fetched = cur.fetchall()
+		return fetched
+
+	except mdb.Error, e:
+		print "Error %d: %s" % (e.args[0],e.args[1])
+		return ''
+	
+	finally:
+		if con:
+			con.close() 
+
+#retrieve a fact from the database
+def fetchFact(zoneid):
+	try:
+		#connext to the database as pythonuser
+		con = mdb.connect('localhost', 'pythonuser', 'lettersofnote', 'londonData');
+		#create a cursor to move around the db
+		cur = con.cursor()
+		#search for the facts
+		cur.execute('SELECT Fact FROM ZoneFacts WHERE ZONEID = "%s"' % zoneid)
+		fetched = cur.fetchall()
+		return fetched
+
+	except mdb.Error, e:
+		print "Error %d: %s" % (e.args[0],e.args[1])
+		return ''
+	
+	finally:
+		if con:
+			con.close() 
+
+#check if tweets have been replied to 
+def checkTweets(tweetid):
+	try:
+		#connext to the database as pythonuser
+		con = mdb.connect('localhost', 'pythonuser', 'lettersofnote', 'londonData');
+		#create a cursor to move around the db
+		cur = con.cursor()
+		#search for the tweetid
+		cur.execute('SELECT * FROM Tweets WHERE TweetID = %d' % tweetid)
+		fetched = cur.fetchall()
+		if len(fetched) > 0:
+			return True
+		else:
+			return False
+
+	except mdb.Error, e:
+		print "Error %d: %s" % (e.args[0],e.args[1])
+		return False
+    
+	finally:
+		if con:
+			con.close()
+
+def main():
+    #instatiate python twitter API wrapper
+	api = twitter.Api(consumer_key='o3YrWKmZXXI8GcURHlApilBw8', consumer_secret='AHRYjbZp70olGFEdqc7b6Ja5m6y6cNnkHeksrSlR5eTf0MtxXy', access_token_key='2813607432-UE65IkfKaV1O0vIbq2FHX7L1wx39086zynZLl8a', access_token_secret='LFdJBcQefgitJSpD0EL0nYqU3xN0h0I1AHsnMxkWckMyj')
+
+	#loop for main calls
+	while True:
+		try:
+			#get mentions for possible reply
+			mentions = api.GetMentions()
+
+			#create a list of instances of tweet to store tweets
+			tweets = [tweet() for i in mentions]
+
+			#pull data from the mentions and populate the tweets list
+			for j,i in enumerate(tweets):
+				i.text = mentions[j].text
+				i.idnum = mentions[j].id
+				i.user = mentions[j].user.screen_name
+				i.reply = None
+	
+			#check to see we have got everything
+			print 'I have found %d tweets' % len(tweets)
+			#print 'recovered tweets'
+			#for i in tweets:
+			#	print i.text, i.idnum, i.user, i.reply
+
+			#check whether the tweets have been replied to in database
+			for i in tweets[:]:
+				if checkTweets(i.idnum):
+					tweets.remove(i)
+					#print '%d has been replied to before' % i.idnum
+				#else:
+					#print '%d is new' % i.idnum
+	
+			#check to see we have removed correctly
+			print '%d not replied to' % len(tweets)
+			#print 'edited tweets'
+			#for i in tweets:
+			#	print i.text, i.idnum, i.user, i.reply
+	
+			#print fetchZoneID('SW21BN')[0][0]
+			#print fetchFact('E1')
+			#dive into database and get replies for each postcode
+			for i in tweets:
+				try:
+					pc = validatePostcode(i.text)
+					zid= fetchZoneID(pc)[0][0]
+					facts = fetchFact(zid)
+				except IndexError:
+					facts = ()
+				#print 'Got this from database:', facts
+				if len(facts) > 0:
+					print 'Found some facts for tweet', i.idnum
+					i.reply = '@' + i.user + ' ' + random.choice(facts)[0]
+				else:
+					i.reply = None
+					print 'No fact found for tweet: ', i.idnum
+
+			#show replies
+			for i in tweets:
+				print i.text, i.idnum, i.user, i.reply
+
+			#post updates and update database
+			for i in tweets:
+				if i.reply != None:
+					#api.PostUpdate(i.reply, i.idnum)
+					print 'Tweeted: ',i.reply
+					insertTweet(i.idnum)
+				else:
+					print 'No reply created for tweet id: ', i.idnum
+
+		   	ratelimits = api.GetRateLimitStatus(u'statuses')
+
+			remaininggetmentions = ratelimits[u'resources'][u'statuses'][u'/statuses/mentions_timeline'][u'remaining']
+
+			print 'I have %d remaining get mentions left.' % (remaininggetmentions)
+
+			#go to sleep for 62 seconds
+			time.sleep(62) 
+		except twitter.error.TwitterError, e:
+			print 'Timeout Error: going to sleep for 900 seconds'
+			time.sleep(900)
+main()
