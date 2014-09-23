@@ -163,7 +163,7 @@ def main():
 			#post updates and update database
 			for i in tweets:
 				if i.reply != None:
-					#api.PostUpdate(i.reply, i.idnum)
+					api.PostUpdate(i.reply, i.idnum)
 					print 'Tweeted: ',i.reply
 					insertTweet(i.idnum)
 				else:
