@@ -1,0 +1,8 @@
+Various levels of geographic boundary data about london taken from
+
+http://data.london.gov.uk/datastore/package/statistical-gis-boundary-files-london
+
+and converted to geoJSON format using ogr2ogr.
+
+License Details	
+Contains National Statistics data © Crown copyright and database right [2012] and Contains Ordnance Survey data © Crown copyright and database right [2012]

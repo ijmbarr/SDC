@@ -1,0 +1,3 @@
+The original data from summer data contest condesed. I believe the original data comes from the land registery.
+
+The file has been compacted so that it only contains data from within london. 
