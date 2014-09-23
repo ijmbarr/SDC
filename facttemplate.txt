@@ -1,0 +1,12 @@
+In this area the average house price is £x.
+House prices in this area have increased by £x last year, that's y%.
+If you head (N/S/E/W) the house prices tend to (inc/dec).
+This area is in the (top/bottom) x% of house prices in London.
+To commute to (Bank) takes x mins. To commute to (Canary Wharf) takes y mins. To commute to (London Bridge) takes z mins.
+To cycle to (Bank) takes x mins. To cycle to (Canary Wharf) takes y mins. To cycle to (London Bridge) takes z mins.
+This area has an unusually large/small number of x offences.
+People who live here tend to be x years old, that's a little/well/not very much above/below average.
+This area has more/less singles/families/students than average.
+This area has the most/least number of x houses in London.       <<<This is across all census data.
+In this area x% of people own their house, y% rent and z% live rent free.
+There are x kids per household in this area, that's above/below/about average for London.
