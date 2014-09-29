@@ -1,0 +1,3 @@
+Data to convert between post code, latitude and longitude and other geographical areas.
+
+Reduced from initial contest data
