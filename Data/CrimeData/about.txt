@@ -1,0 +1,4 @@
+Data about london crime rates, by lsoa, for the last few years.
+
+Taken from 
+http://data.london.gov.uk/dataset/recorded-crime-summary-data-london-lsoa-level

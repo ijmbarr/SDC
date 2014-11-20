@@ -1,0 +1,4 @@
+Data about london household income, by lsoa, for the last few years.
+
+Taken from 
+http://data.london.gov.uk/dataset/household-income-estimates-small-areas
