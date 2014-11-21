@@ -1,0 +1,4 @@
+Data about london demographics, by lsoa, for the last few years.
+
+Taken from 
+http://data.london.gov.uk/dataset/lsoa-atlas
