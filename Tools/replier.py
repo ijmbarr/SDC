@@ -1,5 +1,6 @@
 #Autoreply to tweets with a postcode in
 
+from __future__ import print_function
 import sys
 import twitter
 import time
@@ -38,7 +39,7 @@ def insertTweet(idnum):
 			logger(strftime("%Y-%m-%d %H:%M:%S",gmtime()) + 'Tweet %d inserted.\n' % idnum)
 		
 		except mdb.Error, e:
-			print "Error %d: %s" % (e.args[0],e.args[1])
+			print("Error %d: %s" % (e.args[0],e.args[1]))
 	
 		finally:
 			if con:
@@ -58,7 +59,7 @@ def fetchZoneID(postcode):
 		return fetched
 
 	except mdb.Error, e:
-		print "Error %d: %s" % (e.args[0],e.args[1])
+		print("Error %d: %s" % (e.args[0],e.args[1]))
 		return ''
 	
 	finally:
@@ -78,7 +79,7 @@ def fetchFact(pc,zoneid):
 		return fetched
 
 	except mdb.Error, e:
-		print "Error %d: %s" % (e.args[0],e.args[1])
+		print("Error %d: %s" % (e.args[0],e.args[1]))
 		return ''
 	
 	finally:
@@ -102,7 +103,7 @@ def checkTweets(tweetid):
 				return False
 
 		except mdb.Error, e:
-			print "Error %d: %s" % (e.args[0],e.args[1])
+			print("Error %d: %s" % (e.args[0],e.args[1]))
 			return False
 		
 		finally:
@@ -115,11 +116,11 @@ def main():
     #instatiate python twitter API wrapper
 	api = twitter.Api(consumer_key='o3YrWKmZXXI8GcURHlApilBw8', consumer_secret='AHRYjbZp70olGFEdqc7b6Ja5m6y6cNnkHeksrSlR5eTf0MtxXy', access_token_key='2813607432-UE65IkfKaV1O0vIbq2FHX7L1wx39086zynZLl8a', access_token_secret='LFdJBcQefgitJSpD0EL0nYqU3xN0h0I1AHsnMxkWckMyj')
 
-	print 'Started'
+	print('Started')
 	#loop for main calls
 	while True:
 		try:
-			print 'Running...',
+			print('Running...', end='\r')
 			#get mentions for possible reply
 			mentions = api.GetMentions()
 
@@ -165,15 +166,17 @@ def main():
 					pc = validatePostcode(i.text)
 					zid= fetchZoneID(pc)[0][0]
 					facts = fetchFact(pc,zid)
+					#print(facts)
 				except IndexError:
 					facts = ()
 				#print 'Got this from database:', facts
 				if len(facts) > 0:
-					fact = random.choice(facts)
+					price = facts[-1][0]
+					fact = random.choice(facts[0:len(facts)-1])
 					fact = fact[0]
 					#print fact
 					#print 'Found some facts for tweet', i.idnum
-					i.reply = '@' + i.user.encode('ascii','replace') + ' ' + fact.encode('ascii','replace')
+					i.reply = '@' + i.user.encode('ascii','replace') + ' ' + price.encode('utf8') + ' ' + fact.encode('raw-unicode-escape')
 				else:
 					i.reply = '@' + i.user.encode('ascii','replace') + ' Sorry, I don\'t understand. I only understand postcodes.'
 					#print 'No fact found for tweet: ', i.idnum
